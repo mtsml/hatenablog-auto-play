@@ -1,0 +1,1 @@
+# hatenablog-auto-play
