@@ -52,19 +52,6 @@
         autoplayBtn.addEventListener("click", (e) => {
             autoplay ? autoplayOff(e.target) : autoplayOn(e.target);
         });
-
-        // 記事がビューポートから出たら自動再生ボタンを非表示にする
-        const autoplayBtnObserver = new IntersectionObserver((entries) => {
-            entries.forEach((entry) => {
-                if (entry.isIntersecting) {
-                    autoplayBtn.style.display = "block";
-                } else {
-                    autoplayOff(autoplayBtn);
-                    autoplayBtn.style.display = "none";
-                }
-            });
-        });
-        autoplayBtnObserver.observe(autoplayBtn.parentElement);
     });
 
     const autoplayOn = (btn) => {
