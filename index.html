@@ -44,18 +44,16 @@
 <div id="autoplay-btn" class="disabled"></div>
 <script>
     let observer = null;
-    let autoplay = false;
 
     document.addEventListener("DOMContentLoaded", () => {
         const autoplayBtn = document.getElementById("autoplay-btn");
         autoplayBtn.classList.remove("disabled");
         autoplayBtn.addEventListener("click", (e) => {
-            autoplay ? autoplayOff(e.target) : autoplayOn(e.target);
+            autoplayBtn.classList.contains("autoplay") ? autoplayOff(e.target) : autoplayOn(e.target);
         });
     });
 
     const autoplayOn = (btn) => {
-        autoplay = true;
         btn.classList.add("autoplay");
 
         // ユーザーアクションからloadすることで、JSでのaudio.play()を有効にする
@@ -76,7 +74,7 @@
             if (activeAudio !== null) {
                 for (const audio of audios) !audio.isSameNode(activeAudio) && audio.pause();
                 activeAudio.play();
-    
+
                 // 自動再生ボタンの背景画像を設定する
                 const img = activeAudio.closest(".itunes-embed").querySelector("img");
                 btn.style.backgroundImage = img
@@ -94,7 +92,6 @@
     }
 
     const autoplayOff = (btn) => {
-        autoplay = false;
         btn.classList.remove("autoplay");
         btn.style.backgroundImage = "none";
         observer && observer.disconnect();
