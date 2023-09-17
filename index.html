@@ -1,0 +1,117 @@
+<span></span><style>
+    #autoplay-btn {
+        color: gainsboro;
+        background-color: white;
+        background-size: cover;
+        position: fixed;
+        bottom: 5%;
+        right: 10%;
+        width: 60px;
+        height: 60px;
+        border: 5px solid currentColor;
+        border-radius: 100%;
+        cursor: pointer;
+        z-index: 10000;
+    }
+    #autoplay-btn.disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
+    }
+    #autoplay-btn:before,
+    #autoplay-btn:after {
+        content: "";
+        position: absolute;
+        top: 10px;
+        left: 30%;
+        border-top: 20px solid transparent;
+        border-left: 35px solid currentColor;
+        border-bottom: 20px solid transparent;  
+    }
+    #autoplay-btn.autoplay {
+        border-style: inset;
+    }
+    #autoplay-btn.autoplay:before,
+    #autoplay-btn.autoplay:after {
+        opacity: 0.5;
+        height: 40px;
+        border-width: 0 6px 0 6px;
+        border-color: transparent currentColor transparent currentColor;
+    }
+    #autoplay-btn.autoplay:after {
+        left: 60%;
+    }
+</style>
+<div id="autoplay-btn" class="disabled"></div>
+<script>
+    let observer = null;
+    let autoplay = false;
+
+    document.addEventListener("DOMContentLoaded", () => {
+        const autoplayBtn = document.getElementById("autoplay-btn");
+        autoplayBtn.classList.remove("disabled");
+        autoplayBtn.addEventListener("click", (e) => {
+            autoplay ? autoplayOff(e.target) : autoplayOn(e.target);
+        });
+
+        // 記事がビューポートから出たら自動再生ボタンを非表示にする
+        const autoplayBtnObserver = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    autoplayBtn.style.display = "block";
+                } else {
+                    autoplayOff(autoplayBtn);
+                    autoplayBtn.style.display = "none";
+                }
+            });
+        });
+        autoplayBtnObserver.observe(autoplayBtn.parentElement);
+    });
+
+    const autoplayOn = (btn) => {
+        autoplay = true;
+        btn.classList.add("autoplay");
+
+        // ユーザーアクションからloadすることで、JSでのaudio.play()を有効にする
+        const audios = btn.parentNode.getElementsByTagName("audio");
+        for (const audio of audios) {
+            audio.load();
+            audio.loop = true;
+        };
+
+        observer = new IntersectionObserver((entries) => {
+            let activeAudio = null;
+            entries.forEach((entry) => {
+                // 再生中または交差中のうち最後尾の要素を再生対象とする
+                if (!entry.target.paused || entry.isIntersecting) {
+                    activeAudio = entry.target;
+                }
+            });
+            if (activeAudio !== null) {
+                for (const audio of audios) !audio.isSameNode(activeAudio) && audio.pause();
+                activeAudio.play();
+    
+                // 自動再生ボタンの背景画像を設定する
+                const img = activeAudio.closest(".itunes-embed").querySelector("img");
+                btn.style.backgroundImage = img
+                    ? `url(${img.getAttribute("src")})`
+                    : "none";
+            }
+        }, {
+            rootMargin: "-30% 0px"
+        });
+
+        for (const audio of audios) {
+            audio.load();
+            observer.observe(audio);
+        };
+    }
+
+    const autoplayOff = (btn) => {
+        autoplay = false;
+        btn.classList.remove("autoplay");
+        btn.style.backgroundImage = "none";
+        observer && observer.disconnect();
+        const audios = btn.parentNode.getElementsByTagName("audio");
+        for (const audio of audios) audio.pause();
+    };
+</script>
