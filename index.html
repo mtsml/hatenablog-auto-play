@@ -14,8 +14,7 @@
         z-index: 10000;
     }
     #autoplay-btn.disabled {
-        opacity: 0.3;
-        cursor: not-allowed;
+        display: none;
     }
     #autoplay-btn:before,
     #autoplay-btn:after {
@@ -43,10 +42,20 @@
 </style>
 <div id="autoplay-btn" class="disabled"></div>
 <script>
+    const TAG_MUSIC = "音楽";
     let observer = null;
 
     document.addEventListener("DOMContentLoaded", () => {
+        // 「音楽」タグが指定されているページのみ自動再生ボタンを表示する
+        const tags = document.head.querySelectorAll("meta[property='article:tag']");
+        const isMusicArticle = Array.from(tags).some(tag => TAG_MUSIC === tag.content);
+        if (!isMusicArticle) return;
+
+        // audioがない場合は自動再生ボタンを表示しない
         const autoplayBtn = document.getElementById("autoplay-btn");
+        const audios = autoplayBtn.parentNode.getElementsByTagName("audio");
+        if (audios.length === 0) return;
+
         autoplayBtn.classList.remove("disabled");
         autoplayBtn.addEventListener("click", (e) => {
             autoplayBtn.classList.contains("autoplay") ? autoplayOff(e.target) : autoplayOn(e.target);
